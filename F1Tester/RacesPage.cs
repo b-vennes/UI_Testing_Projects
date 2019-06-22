@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Interactions;
@@ -8,7 +9,7 @@ namespace F1Tester
 {
     public class RacesPage
     {
-        FirefoxDriver firefox;
+        IWebDriver _driver;
         string baseUrl = "https://www.formula1.com/en/racing/2019.html";
 
         public enum Races
@@ -21,23 +22,29 @@ namespace F1Tester
             Monaco
         }
 
-        public RacesPage(FirefoxDriver firefoxDriver)
+        public RacesPage(IWebDriver driver)
         {
-            firefox = firefoxDriver;
+            _driver = driver;
         }
 
         public void Open()
         {
-            firefox.Navigate().GoToUrl(baseUrl);
+            _driver.Navigate().GoToUrl(baseUrl);
+            new WebDriverWait(_driver, TimeSpan.FromSeconds(20))
+                .Until(driver => driver.FindElement(By.XPath(".//*[contains(@class,'countdown-wrapper')]")));
         }
 
         public void ClickRace(Races race)
         {
-            var image = firefox.FindElementByXPath($".//*[contains(@class, 'teaser-image') and contains(@style, '{race}')]");
-            new Actions(firefox)
-                .Click(image)
+            IWebElement image = _driver.FindElement(By.XPath($".//*[contains(@class, 'teaser-image') and contains(@style, '{race}')]"));
+
+            new Actions(_driver)
+                .MoveToElement(image)
+                .Click()
+                .Build()
                 .Perform();
-            new WebDriverWait(firefox, TimeSpan.FromSeconds(20))
+
+            new WebDriverWait(_driver, TimeSpan.FromSeconds(20))
                 .Until(driver => driver.FindElement(By.XPath($".//*[contains(@class,'race-location') and contains(text(), '{race}')]")));
         }
     }
